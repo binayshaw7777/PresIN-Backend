@@ -1,0 +1,30 @@
+{
+  "name": "presin-backend",
+  "version": "1.0.0",
+  "description": "- @hapi/joi\r - bcrypt\r - dotenv\r - express\r - jsonwebtoken\r - mongoose\r - nodemon\r - nodemailer",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aritra-tech/PresIN-Backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aritra-tech/PresIN-Backend/issues"
+  },
+  "homepage": "https://github.com/aritra-tech/PresIN-Backend#readme",
+  "dependencies": {
+    "@hapi/joi": "^17.1.1",
+    "bcrypt": "^5.1.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.2",
+    "nodemon": "^2.0.21"
+  }
+}
