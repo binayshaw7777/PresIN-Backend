@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     phone: {
-        type: Number,
+        type: String,
         required: true
     },
     isAdmin: {
@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
         default: false
     },
     role: {
+        type: String,
+        required: true
+    },
+    organization: {
         type: String,
         required: true
     },

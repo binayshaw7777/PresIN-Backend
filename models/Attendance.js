@@ -15,6 +15,7 @@ const attendanceSchema = new mongoose.Schema({
     required: true
   },
   markedHour: {
+    //This will be in 24 hour format
     type: Number,
     required: true
   },
@@ -30,15 +31,19 @@ const attendanceSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  faceEmbeddings: {
-    type: String,
-    required: true
-  },
   organization: {
     type: String,
     required: true
   },
-  mathPercentage: {
+  location: {
+    type: String,
+    required: true
+  },
+  faceEmbeddings: {
+    type: String,
+    required: true
+  },
+  matchPercentage: {
     type: Number,
     required: true
   }
