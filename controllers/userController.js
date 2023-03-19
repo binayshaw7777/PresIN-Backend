@@ -4,8 +4,13 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/User.js')
 const Token = require('../models/token.js');
 const BCRYPT_SALT = 10
+const RESET_PASSWORD = 'reset-password'
+const END_POINT = process.env.END_POINT || `http://localhost:${process.env.PORT}`
+const crypto = require('crypto');
+const sendEmail = require('../utils/sendEmail.js');
 
 const TOKEN_EXPIRY = "7d";
+const EMAIL_EXPIRY = Date.now() + 15 * 60 * 1000;
 
 class UserController {
 
@@ -89,6 +94,120 @@ class UserController {
         }
     }
 
+
+    static deleteUser = async (req, res) => {
+      try {
+        const userExists = await User.findById(req.params.id);
+        if (!userExists) {
+          return res.status(404).send({ status: 404, message: "User not found!"});
+        }
+
+        await userExists.deleteOne();
+        res.status(200).send({ status: 200, message: "User deleted successfully!" })
+
+      } catch (error) {
+        console.log(error);
+        res.status(400).send({ status: 400, message: error });
+      }
+    }
+
+
+    static getUserById = async (req, res) => {
+      try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+          return res.status(404).send({ status: 404, message: "User not found!"});
+        }
+
+        res.status(200).send({ status: 200, message: "User found successfully!", user: user });
+
+      } catch (error) {
+        console.log(error);
+        if (error.name === 'CastError') {
+          return res.status(400).send({ status: 400, message: `Invalid ${error.path}: ${error.value}` });
+        }
+        res.status(500).send({ status: 500, message: "Something went wrong!" });
+      }
+    }
+
+
+    static resetPassword = async (req, res) => {
+      try {
+        const email = req.body.email;
+        if (!email) {
+          return res.status(400).send({ status: 400, message: "Email is required!" });
+        }
+
+        const user = await User.findOne({ email: email });
+        if (!user) {
+          return res.status(400).send({ status: 400, message: "You're not a registered user!"});
+        }
+
+        let token = await Token.findOne({ userId: user._id });
+         if (!token) {
+              token = await new Token({
+                userId: user._id,
+                token: crypto.randomBytes(32).toString("hex"),
+                expiresAt: EMAIL_EXPIRY
+              }).save();
+          }
+
+          const link = `${END_POINT}/${RESET_PASSWORD}/${user._id}/${token.token}`;
+          const emailMessage = generatePasswordResetEmail(user.name, link);
+
+          await sendEmail(user.email, "Password reset", emailMessage);
+          res.status(200).send({ status: 200, message: "Email sent successfully!"})
+
+      } catch (error) {
+        console.log(error);
+        res.status(400).send({ status: 400, message: error });
+      }
+    }
+    
+
+    static resetPasswordFromLink = async (req, res) => {
+      try {
+        const user = await User.findById(req.params.userId);
+        if (!user) {
+          return res.status(400).send({ status: 400, message: "You're not a registered user!"});
+        }
+
+        const token = await Token.findOne({userId: user._id,token: req.params.token});
+        if (!token) {
+          return res.status(400).send({ status: 400, message: "Invalid link or expired link!"})
+        }
+
+        const salt = await bcrypt.genSalt(BCRYPT_SALT)
+        const hashedPassword = await bcrypt.hash(req.body.password, salt)
+        user.password = hashedPassword;
+
+        await user.save();
+        await token.deleteOne();
+        res.status(200).send({ status: 200, message: "Password changed successfully!" })
+
+      } catch (error) {
+        console.log(error);
+        res.status(400).send({ status: 400, message: error });
+      }
+    }
+
+};
+
+function generatePasswordResetEmail(name, resetLink) {
+  const supportEmail = process.env.USER;
+  const emailContent = `Hi ${name},
+
+You requested a password reset. To proceed, click the link below within 15 minutes:
+
+${resetLink}
+
+If you didn't request a password reset, please ignore this email.
+
+Got questions or concerns? Contact us anytime at ${supportEmail}. We're always happy to help.
+
+Best regards,
+PresIN Team`;
+  return emailContent.trim();
 }
 
 module.exports = UserController;
