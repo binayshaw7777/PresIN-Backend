@@ -5,6 +5,7 @@ const app = express();
 const PORT = process.env.PORT || 3000
 const userRoutes = require('./routes/userRoute.js')
 const attendanceRoutes = require('./routes/attendanceRoute.js')
+const organizationRoutes = require('./routes/organizationRoute.js')
 
 app.get('/', (req,res) => {
     res.send("Homepage")
@@ -14,6 +15,7 @@ app.use(express.json())
 
 app.use('/api/users', userRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/organizations', organizationRoutes);
 
 const start = async() => {
     try {
