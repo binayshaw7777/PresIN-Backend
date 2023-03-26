@@ -41,11 +41,12 @@ const attendanceSchema = new mongoose.Schema({
   },
   faceEmbeddings: {
     type: String,
-    required: true
+    default: ""
   },
   matchPercentage: {
     type: Number,
-    required: true
+    default: 0,
+    max: 100
   }
   
 

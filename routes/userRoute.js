@@ -9,6 +9,9 @@ router.post('/login', userController.userLogin)
 router.get('/all', userController.getAllUsers)
 router.post("/reset-password", userController.resetPassword);
 router.post("/reset-password/:userId/:token", userController.resetPasswordFromLink);
+router.post("/reset-password-otp", userController.resetPasswordWithOTP);
+router.post("/reset-password-otp/:userId/:token", userController.resetPasswordFromLink);
+
 
 //Private Routes
 router.post("/delete/:id", userController.deleteUser);

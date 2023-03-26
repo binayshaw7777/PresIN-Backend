@@ -191,7 +191,90 @@ class UserController {
       }
     }
 
+
+    static resetPasswordWithOTP = async (req, res) => {
+      try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+          return res.status(400).json({ message: "All fields are required!"});
+        }
+
+        const user = await User.findOne({ email: email });
+        if (!user) {
+          return res.status(404).json({ message: "You're not a registered user!"});
+        }
+
+        let token = await Token.findOne({ userId: user._id });
+         if (!token) {
+              token = await new Token({
+                userId: user._id,
+                token: crypto.randomBytes(32).toString("hex"),
+                expiresAt: EMAIL_EXPIRY
+              }).save();
+          }
+
+
+          const emailMessage = generatePasswordResetOTPEmail(user.name, otp);
+
+          await sendEmail(user.email, "Password reset", emailMessage);
+          res.status(200).send({ message: "Email sent successfully!", token: token.token, userID: user._id})
+
+      } catch (error) {
+        console.log(error);
+        res.status(400).send({ message: error });
+      }
+    }
+
+
+    static resetPasswordAfterVerifyingOTP = async (req, res) => {
+      try {
+        const user = await User.findById(req.params.userId);
+        if (!user) {
+          return res.status(400).json({ message: "You're not a registered user!"});
+        }
+
+        const token = await Token.findOne({userId: user._id, token: req.params.token});
+        if (!token) {
+          return res.status(400).json({ message: "Invalid link or expired link!"})
+        }
+
+        const salt = await bcrypt.genSalt(BCRYPT_SALT)
+        const hashedPassword = await bcrypt.hash(req.body.password, salt)
+        user.password = hashedPassword;
+
+        await user.save();
+        await token.deleteOne();
+        res.status(200).send({ message: "Password changed successfully!" })
+        
+      } catch (error) {
+        console.log(error);
+        res.status(400).json({ message: error });
+      }
+    }
+
 };
+
+
+
+function generatePasswordResetOTPEmail(name, otp) {
+  const supportEmail = process.env.USER;
+  const emailContent = `Hi ${name},
+
+You requested a password reset. To proceed, use the OTP below within 15 minutes:
+
+Your OTP is: 
+
+${otp}
+
+If you didn't request a password reset, please ignore this email.
+
+Got questions or concerns? Contact us anytime at ${supportEmail}. We're always happy to help.
+
+Best regards,
+PresIN Team`;
+  return emailContent.trim();
+}
+
 
 function generatePasswordResetEmail(name, resetLink) {
   const supportEmail = process.env.USER;
