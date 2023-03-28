@@ -24,12 +24,11 @@ class AttendanceController {
         //Check if list of all attendees is empty or not
         const listOfAllAttendees = await Attendance.find(filter).sort(sort);
         if (!listOfAllAttendees || listOfAllAttendees.length == 0)
-          return res.send({ status: 400, message: "No attendees found!" });
+          return res.send({ message: "No attendees found!" });
 
         res
           .status(200)
           .send({
-            status: 200,
             message: "All attendees fetched successfully!",
             attendanceList: listOfAllAttendees,
           });
@@ -38,7 +37,7 @@ class AttendanceController {
         console.log(error);
         res
           .status(400)
-          .send({ status: 400, message: `Something went wrong! ${error}` });
+          .json({ message: `Something went wrong! ${error}` });
       }
     }
 
@@ -73,7 +72,7 @@ class AttendanceController {
             ) {
               return res
                 .status(400)
-                .send({ status: 400, message: "All fields are required!" });
+                .json({ message: "All fields are required!" });
             }
 
             const existingAttendance = await Attendance.findOne({
@@ -86,7 +85,7 @@ class AttendanceController {
   
         
             if (existingAttendance) {
-                return res.status(400).send({ status: 400, message: 'Attendance already marked for this date!' });
+                return res.status(400).json({ message: 'Attendance already marked for this date!' });
             }
 
             //Create new attendance and save it in the DB
@@ -104,10 +103,10 @@ class AttendanceController {
                 matchPercentage,
             });
             
-            res.status(200).send({ status: 200, message: 'Attendance marked successfully!' });
+            res.status(200).send({ message: 'Attendance marked successfully!' });
         } catch (error) {
             console.log(error);
-            res.status(400).send({ status: 400, message: `Something went wrong! ${error}`});
+            res.status(400).json({ message: `Something went wrong! ${error}`});
         }
     }
 
@@ -118,12 +117,11 @@ class AttendanceController {
         if (!attendanceIsPresent) {
           return res
             .status(404)
-            .send({ status: 404, message: "Attendance not found!" });
+            .json({ message: "Attendance not found!" });
         }
         res
           .status(200)
           .send({
-            status: 200,
             message: "Attendance fetched successfully!",
             data: attendanceIsPresent,
           });
@@ -132,12 +130,11 @@ class AttendanceController {
         if (error.name === "CastError") {
           return res
             .status(400)
-            .send({
-              status: 400,
+            .json({
               message: `Invalid ${error.path}: ${error.value}`,
             });
         }
-        res.status(500).send({ status: 500, message: "Something went wrong!" });
+        res.status(500).json({ message: "Something went wrong!" });
       }
     }
 

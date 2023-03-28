@@ -6,14 +6,14 @@ class OrganizationController {
         try {
             const listOfAllOrganizations = await Organization.find({});
             if (!listOfAllOrganizations || listOfAllOrganizations.length == 0) {
-                return res.status(400).send({ status: 400, message: "No organizations found!"});
+                return res.status(400).json({ message: "No organizations found!"});
             }
 
-            res.status(200).send({ status: 200, message: "All organizations fetched successfully!", organizations: listOfAllOrganizations});
+            res.status(200).send({ message: "All organizations fetched successfully!", organizations: listOfAllOrganizations});
 
         } catch (error) {
             console.log(error);
-            res.status(400).send({ status: 400, message: `Something went wrong! ${error}`});
+            res.status(400).json({ message: `Something went wrong! ${error}`});
         }
     }
 
@@ -23,12 +23,12 @@ class OrganizationController {
             
             const {organizationName, organizationEmail, organizationLocation, organizationLogo, organizationWebsite} = req.body;
             if (!organizationName || !organizationEmail || !organizationLocation) {
-                return res.status(400).send({status: 400, message: "All fields are required!"});
+                return res.status(400).json({ message: "All fields are required!"});
             }
 
             const existingOrganization = await Organization.findOne({ organizationName: { $regex: new RegExp('^'+organizationName+'$', "i") } });
             if (existingOrganization) {
-                return res.status(400).send({ status: 400, message: 'Organization already exists!' });
+                return res.status(400).json({ message: 'Organization already exists!' });
             }
 
             //Create new organization and save it in the DB
@@ -40,11 +40,11 @@ class OrganizationController {
                 organizationWebsite,
             });
 
-            res.status(200).send({ status: 200, message: 'Organization added successfully!' });
+            res.status(200).send({ message: 'Organization added successfully!' });
 
         } catch (error) {
             console.log(error);
-            res.status(400).send({ status: 400, message: `Something went wrong! ${error}`});
+            res.status(400).json({ message: `Something went wrong! ${error}`});
         }
     }
 
@@ -53,13 +53,12 @@ class OrganizationController {
         try {
             const organizationIsPresent = await Organization.findById(req.params.id);
             if (!organizationIsPresent) {
-                return res.status(400).send({ status: 400, message: 'No organizations found!' });
+                return res.status(400).json({ message: 'No organizations found!' });
             }
 
             res
               .status(200)
               .send({
-                status: 200,
                 message: "Organizations retrieved successfully!",
                 organization: organizationIsPresent,
               });
@@ -67,9 +66,9 @@ class OrganizationController {
         } catch (error) {
             console.error(error);
             if (error.name === 'CastError') {
-              return res.status(400).send({ status: 400, message: `Invalid ${error.path}: ${error.value}` });
+              return res.status(400).json({ message: `Invalid ${error.path}: ${error.value}` });
             }
-            res.status(500).send({ status: 500, message: "Something went wrong!" });
+            res.status(500).json({ message: "Something went wrong!" });
           }
     }
 
